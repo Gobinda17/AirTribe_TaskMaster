@@ -30,7 +30,7 @@ class UserController {
                 message: `Message: ${error}`
             });
         }
-    }
+    };
 
     // User Login
     userLogin = async (req, res) => {
@@ -42,15 +42,15 @@ class UserController {
 
             const passwordMatch = await bcrypt.compare(password, user.password);
 
-            if(!passwordMatch) {
+            if (!passwordMatch) {
                 return res.status(401).json({
                     status: 'fail',
                     message: 'Invalid credentials'
                 });
             }
 
-            const jsonToken = await jwt.sign({userId: user._id, userEmail: user.email, userRole: user.role}, JWT_SECRET, {expiresIn: JWT_EXPIRATION});
-        
+            const jsonToken = await jwt.sign({ userId: user._id, userEmail: user.email, userRole: user.role }, JWT_SECRET, { expiresIn: JWT_EXPIRATION });
+
             return res.status(200).json({
                 status: 'success',
                 message: 'Login successful',
@@ -64,7 +64,51 @@ class UserController {
                 message: `Message: ${error}`
             });
         }
-    }
+    };
+
+    // Update User Profile
+    updateUserProfile = async (req, res) => {
+        try {
+            const authHeader = req.headers.authorization;
+            const userId = req.params.id;
+
+            if (!authHeader) {
+                return res.status(401).json({
+                    status: 'error',
+                    message: 'Unauthorized: No token provided'
+                });
+            }
+
+            const token = authHeader.split(' ')[1];
+
+            const decoded = await jwt.verify(token, JWT_SECRET);
+
+            if (decoded.userId !== userId) {
+                return res.status(403).json({
+                    status: 'error',
+                    message: 'Forbidden: You are not allowed to update this profile'
+                });
+            }
+
+            const { name, email } = req.body;
+
+            const updatedData = {};
+            if (name) updatedData.name = name;
+            if (email) updatedData.email = email;
+
+            await userModel.findByIdAndUpdate(userId, updatedData, { new: true });
+
+            return res.status(200).json({
+                status: 'success',
+                message: 'User profile updated successfully'
+            });
+        } catch (error) {
+            return res.status(500).json({
+                status: 'error',
+                message: `Message: ${error}`
+            });
+        }
+    };
 }
 
 module.exports = new UserController();

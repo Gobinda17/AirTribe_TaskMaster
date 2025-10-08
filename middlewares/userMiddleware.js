@@ -82,7 +82,10 @@ class UserMiddleware {
 
     validateProfileUpdate = async (req, res, next) => {
         try {
-            
+            // Check for validation errors
+            // If there are validation errors, the response will be sent from the handler
+            this.#handleValidationErrors(req, res);
+            next();
         } catch (error) {
             return res.status(500).json({
                 status: 'error',

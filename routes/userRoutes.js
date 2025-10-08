@@ -13,6 +13,6 @@ router.post('/register/:role', [registrationValidation, UserMiddleware.validateR
 // Login route
 router.post('/login/:role', [loginValidation, UserMiddleware.validateLogin.bind(UserMiddleware)], UserController.userLogin.bind(UserController));
 // Update User Profile
-router.put('/profile/user/:id', [updateUserProfileValidation]);
+router.put('/profile/user/:id', [updateUserProfileValidation, UserMiddleware.validateProfileUpdate.bind(UserMiddleware)], UserController.updateUserProfile.bind(UserController));
 
 module.exports = router;
