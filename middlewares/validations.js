@@ -29,4 +29,12 @@ const taskCreationValidation = [
     body('status').optional().isIn(['pending', 'in-progress', 'completed']).withMessage('Status must be either "pending", "in-progress", or "completed".')
 ];
 
-module.exports = { registrationValidation, loginValidation, updateUserProfileValidation, taskCreationValidation };
+// Validation rule for task updation
+const taskUpdationValidation = [
+    body('title').optional().notEmpty().withMessage('Title cannot be empty if provided.'),
+    body('description').optional().notEmpty().withMessage('Description cannot be empty if provided.'),
+    body('dueDate').optional().isISO8601().withMessage('Due date must be a valid date if provided.'),
+    body('status').optional().isIn(['pending', 'in-progress', 'completed']).withMessage('Status must be either "pending", "in-progress", or "completed".')
+];
+
+module.exports = { registrationValidation, loginValidation, updateUserProfileValidation, taskCreationValidation, taskUpdationValidation };

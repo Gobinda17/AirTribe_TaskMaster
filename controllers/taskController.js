@@ -77,5 +77,42 @@ class TaskController {
         }
     };
 
+    // Update a task
+    updateTask = async ( req, res ) => {
+        try {
+            const taskId = req.params.id;
+            const { title, description, status, dueDate, assignedTo } = req.body;
+
+            const taskUpdates = {}
+
+            if(title) taskUpdates.title = title;
+            if(description) taskUpdates.description = description;
+            if(status) taskUpdates.status = status;
+            if(dueDate) taskUpdates.dueDate = dueDate;
+            if(assignedTo) taskUpdates.assignedTo = assignedTo;
+
+            const task = await taskModel.findOneAndUpdate({_id: taskId, createdBy: req.userId }, taskUpdates , { new: true });
+
+            if (!task) {
+                return res.status(404).json({
+                    status: 'fail',
+                    message: 'Task not found'
+                });
+            }
+
+            return res.status(200).json({
+                status: 'success',
+                message: 'Task updated successfully',
+                task: task
+            });
+
+        } catch (error) {
+            return res.status(500).json({
+                status: 'error',
+                message: `Message: ${error}`
+            });
+        }
+    };
+
 }
 module.exports = new TaskController();

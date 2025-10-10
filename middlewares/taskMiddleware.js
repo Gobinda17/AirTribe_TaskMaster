@@ -68,8 +68,8 @@ class TaskMiddleware {
         }
     };
 
-    // Middleware to validate task creation
-    validateTaskCreation = async (req, res, next) => {
+    // Middleware to validate task creation or updation
+    validateTaskCreationOrUpdation = async (req, res, next) => {
         try {
             // Check for validation errors
             this.#handleValidationErrors(req, res);
@@ -109,7 +109,7 @@ class TaskMiddleware {
                 message: `Message: ${error}`
             });
         }
-    }
+    };
 
 }
 
