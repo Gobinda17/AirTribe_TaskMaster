@@ -26,7 +26,9 @@ const taskCreationValidation = [
     body('title').notEmpty().withMessage('Title is required.'),
     body('description').notEmpty().withMessage('Description is required.'),
     body('dueDate').notEmpty().isISO8601().withMessage('Due date must be a valid date.'),
-    body('status').optional().isIn(['pending', 'in-progress', 'completed']).withMessage('Status must be either "pending", "in-progress", or "completed".')
+    body('status').optional().isIn(['pending', 'in-progress', 'completed']).withMessage('Status must be either "pending", "in-progress", or "completed".'),
+    body('assignedTo').isArray({ min: 1 }).withMessage('At least one user must be assigned to the task.'),
+    body('assignedTo.*').isMongoId().withMessage('Each assigned user ID must be a valid User ID.')
 ];
 
 // Validation rule for task updation
@@ -34,7 +36,22 @@ const taskUpdationValidation = [
     body('title').optional().notEmpty().withMessage('Title cannot be empty if provided.'),
     body('description').optional().notEmpty().withMessage('Description cannot be empty if provided.'),
     body('dueDate').optional().isISO8601().withMessage('Due date must be a valid date if provided.'),
-    body('status').optional().isIn(['pending', 'in-progress', 'completed']).withMessage('Status must be either "pending", "in-progress", or "completed".')
+    body('status').optional().isIn(['pending', 'in-progress', 'completed']).withMessage('Status must be either "pending", "in-progress", or "completed".'),
+    body('addAssignedTo').optional().isArray().withMessage(' AssignedTo must be an array if provided.'),
+    body('addAssignedTo.*').optional().isMongoId().withMessage('Each added assigned user ID must be a valid User ID.'),
+    body('removeAssignedTo').optional().isArray().withMessage(' removeAssignedTo must be an array if provided.'),
+    body('removeAssignedTo.*').optional().isMongoId().withMessage('Each removed assigned user ID must be a valid User ID.'),
 ];
 
-module.exports = { registrationValidation, loginValidation, updateUserProfileValidation, taskCreationValidation, taskUpdationValidation };
+// Validation rule for adding comments to a task
+const addCommentValidation = [
+    body('text').notEmpty().withMessage('Comment text is required.'),
+];
+
+// Validation rule for adding attachments to a task
+const addAttachmentValidation = [
+    body('fileName').notEmpty().withMessage('File name is required.'),
+    body('fileUrl').notEmpty().isURL().withMessage('File URL must be a valid URL.'),
+];
+
+module.exports = { registrationValidation, loginValidation, updateUserProfileValidation, taskCreationValidation, taskUpdationValidation, addCommentValidation, addAttachmentValidation };
