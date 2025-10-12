@@ -1,3 +1,6 @@
+const fs = require('fs');
+const path = require('path');
+
 const taskModel = require("../models/taskModels");
 
 class TaskController {
@@ -39,6 +42,16 @@ class TaskController {
             });
 
             const saveTask = await newTask.save();
+
+            // Notify assigned user (if any)
+            const io = req.app.get('io');
+            if (newTask.assignedTo) {
+                io.to(newTask.assignedTo.toString()).emit('task-assigned', {
+                    message: `You have been assigned a new task: ${newTask.title}`,
+                });
+
+                console.log(`Notification emitted to user: ${newTask.assignedTo}`);
+            }
 
             return res.status(201).json({
                 status: 'success',
@@ -295,6 +308,13 @@ class TaskController {
             const taskId = req.params.id;
 
             const task = await taskModel.findOneAndDelete({ _id: taskId, createdBy: req.userId });
+
+            // If there was an attachment associated with the task, delete the file from the server
+            if (task && task.attachments && task.attachments.length > 0) {
+                task.attachments.forEach(attachment => {
+                    fs.unlink(path.join(__dirname, '..', 'uploads', attachment.fileName), () => { });
+                });
+            }
 
             if (!task) {
                 return res.status(404).json({
