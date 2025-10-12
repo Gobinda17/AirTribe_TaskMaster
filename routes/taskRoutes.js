@@ -1,39 +1,50 @@
+// I'm importing Express to create my router for task-related endpoints
 const express = require('express');
+// I'm creating a router instance to define task routes
 const router = express.Router();
 
-// Multer for handling file uploads
+// I'm importing multer configuration for handling file uploads (attachments)
 const upload = require('../utils/multerConfig');
 
-// Validation rules for task
+// I'm importing validation rules for different task operations
 const { taskCreationValidation, taskUpdationValidation, addCommentValidation, addAttachmentValidation } = require('../middlewares/validations');
 
-// Importing the necessary middleware
+// I'm importing my task middleware for authentication and validation
 const TaskMiddleware = require('../middlewares/taskMiddleware');
-// Importing the necessary controller
+// I'm importing my task controller to handle business logic
 const TaskController = require('../controllers/taskController');
 
-// Route to create a new task
+// I'm defining the task creation route for authenticated users
+// This route handles POST requests to /task with validation and authentication
 router.post('/task', [taskCreationValidation, TaskMiddleware.validateTaskCreationOrUpdation.bind(TaskMiddleware)], TaskController.createTask.bind(TaskController));
 
-// Route to view tasks assigned to the authenticated user
+// I'm defining the route to view tasks assigned to the authenticated user
+// This route handles GET requests to /task to retrieve user's assigned tasks
 router.get('/task', [TaskMiddleware.validateViewTasksOrDeleteTask.bind(TaskMiddleware)], TaskController.viewTasks.bind(TaskController));
 
-// Route to update a task by ID
+// I'm defining the task update route for modifying existing tasks
+// This route handles PATCH requests to /task/:id for updating task details
 router.patch('/task/:id', [taskUpdationValidation, TaskMiddleware.validateTaskCreationOrUpdation.bind(TaskMiddleware)], TaskController.updateTask.bind(TaskController));
 
-// Route to search tasks by title or description
+// I'm defining the task search route for finding tasks by title or description
+// This route handles GET requests to /task/search with query parameters
 router.get('/task/search', [TaskMiddleware.validateViewTasksOrDeleteTask.bind(TaskMiddleware)], TaskController.searchTasks.bind(TaskController));
 
-// Routes to filter tasks by status
+// I'm defining the task filtering route for filtering tasks by status
+// This route handles GET requests to /task/filter with status query parameters
 router.get('/task/filter', [TaskMiddleware.validateViewTasksOrDeleteTask.bind(TaskMiddleware)], TaskController.filterTasksByStatus.bind(TaskController));
 
-// Routes to add comments to a task
+// I'm defining the route to add comments to tasks for collaboration
+// This route handles PATCH requests to /task/:id/comment for adding discussion comments
 router.patch('/task/:id/comment', [addCommentValidation, TaskMiddleware.validateTaskCreationOrUpdation.bind(TaskMiddleware)], TaskController.addComment.bind(TaskController));
 
-// Routes to add attachments to a task
+// I'm defining the route to add file attachments to tasks
+// This route handles PATCH requests to /task/:id/attachment with file upload functionality
 router.patch('/task/:id/attachment', [addAttachmentValidation, TaskMiddleware.validateTaskCreationOrUpdation.bind(TaskMiddleware), upload.single('attachment')], TaskController.addAttachment.bind(TaskController));
 
-// Route to delete a task by ID
+// I'm defining the task deletion route for removing tasks
+// This route handles DELETE requests to /task/:id for deleting specific tasks
 router.delete('/task/:id', [TaskMiddleware.validateViewTasksOrDeleteTask.bind(TaskMiddleware)], TaskController.deleteTask.bind(TaskController));
 
+// I'm exporting the router so it can be mounted in the main app
 module.exports = router;
