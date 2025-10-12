@@ -27,3 +27,6 @@ router.patch('/project/:id/:accept', ProjectMiddleware.validateAcceptingInvites.
 
 // I'm exporting the router so it can be mounted in the main app
 module.exports = router;
+
+
+
