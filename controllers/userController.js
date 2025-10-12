@@ -1,4 +1,8 @@
+// User Model
 const userModel = require('../models/userModels');
+
+// Blaclist Token Model
+const BlacklistedToken = require('../models/blackListTokenModels');
 
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -101,6 +105,32 @@ class UserController {
             return res.status(200).json({
                 status: 'success',
                 message: 'User profile updated successfully'
+            });
+        } catch (error) {
+            return res.status(500).json({
+                status: 'error',
+                message: `Message: ${error}`
+            });
+        }
+    };
+
+    // User Logout
+    userLogout = async (req, res) => {
+        try {
+            const token = req.token;
+            const expiry = new Date(token.exp * 1000);
+
+            const authHeader = req.headers.authorization;
+            const tokenToBeBlacklisted = authHeader.split(' ')[1];
+
+
+            // Add to DB blacklist (persistent invalidation)
+            const blacklistedToken = new BlacklistedToken({ token: tokenToBeBlacklisted, expiresAt: expiry });
+            await blacklistedToken.save();
+
+            return res.status(200).json({
+                status: 'success',
+                message: 'Logged out successfully. Token invalidated.'
             });
         } catch (error) {
             return res.status(500).json({

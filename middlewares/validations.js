@@ -50,8 +50,21 @@ const addCommentValidation = [
 
 // Validation rule for adding attachments to a task
 const addAttachmentValidation = [
-    body('fileName').notEmpty().withMessage('File name is required.'),
-    body('fileUrl').notEmpty().isURL().withMessage('File URL must be a valid URL.'),
+    body('fileName').optional().isString().trim(),
 ];
 
-module.exports = { registrationValidation, loginValidation, updateUserProfileValidation, taskCreationValidation, taskUpdationValidation, addCommentValidation, addAttachmentValidation };
+// Validation rules for project creation
+const projectCreationValidation = [
+    body('name').notEmpty().withMessage('Project name is required.'),
+    body('description').optional().isString().withMessage('Description must be a string if provided.'),
+    body('members').optional().isArray({ min: 1 }).withMessage('At least one member must be added to the project.'),
+    body('members.*').optional().isMongoId().withMessage('Each member ID must be a valid User ID.'),
+];
+
+// Validation rules for sending invitations
+const sendInvitationsValidation = [
+    body('members').isArray({ min: 1 }).withMessage('At least one member must be invited.'),
+    body('members.*').isMongoId().withMessage('Each member ID must be a valid User ID.'),
+]
+
+module.exports = { registrationValidation, loginValidation, updateUserProfileValidation, taskCreationValidation, taskUpdationValidation, addCommentValidation, addAttachmentValidation, projectCreationValidation, sendInvitationsValidation };

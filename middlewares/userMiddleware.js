@@ -1,5 +1,13 @@
 const { validationResult } = require('express-validator');
+
+const jwt = require('jsonwebtoken');
+const JWT_SECRET = process.env.JWT_SECRET;
+
+// User Model
 const userModel = require('../models/userModels');
+
+// Blaclist Token Model
+const BlacklistedToken = require('../models/blackListTokenModels');
 
 class UserMiddleware {
     // Private method to check if email already exists
@@ -29,7 +37,45 @@ class UserMiddleware {
         }
     };
 
+    // Check jwt token
+    #verifyToken = async (req, res) => {
+        try {
+            const authHeader = req.headers.authorization;
 
+            if (!authHeader) {
+                return res.status(401).json({
+                    status: 'error',
+                    message: 'Unauthorized: No token provided'
+                });
+            }
+
+            const token = authHeader.split(' ')[1];
+
+            // Checking for Blaslisted Token
+            const blacklisted = await BlacklistedToken.findOne({ token });
+            if (blacklisted) {
+                return res.status(401).json({ message: 'Token blacklisted' });
+            }
+
+            const decoded = await jwt.verify(token, JWT_SECRET);
+            if (!decoded) {
+                return res.status(401).json({
+                    status: 'error',
+                    message: 'Unauthorized: Invalid token'
+                });
+            }
+            return decoded;
+        } catch (error) {
+            return res.status(500).json({
+                status: 'error',
+                message: `Message: ${error}`
+            });
+        }
+    };
+
+
+
+    // Validate user registration
     validateRegistration = async (req, res, next) => {
         try {
             // Check for validation errors
@@ -55,6 +101,7 @@ class UserMiddleware {
         }
     };
 
+    // Validate user login
     validateLogin = async (req, res, next) => {
         try {
             // Check for validation errors
@@ -80,6 +127,7 @@ class UserMiddleware {
         }
     };
 
+    // Validate user profile update
     validateProfileUpdate = async (req, res, next) => {
         try {
             // Check for validation errors
@@ -93,6 +141,22 @@ class UserMiddleware {
             });
         }
     };
+
+    // Validate user logout
+    validateLogout = async (req, res, next) => {
+        try {
+            // Verify JWT token
+            const decoded = await this.#verifyToken(req, res);
+            req.userId = decoded.userId;
+            req.token = decoded;
+            next();
+        } catch (error) {
+            return res.status(500).json({
+                status: 'error',
+                message: `Message: ${error}`
+            });
+        }
+    }
 }
 
 module.exports = new UserMiddleware();

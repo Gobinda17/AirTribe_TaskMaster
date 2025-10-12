@@ -1,6 +1,3 @@
-const multer = require('multer');
-const upload = multer({ dest: "uploads/" });
-
 const taskModel = require("../models/taskModels");
 
 class TaskController {
@@ -229,7 +226,7 @@ class TaskController {
                 id,
                 { $push: { comments: comment } },
                 { new: true }
-            ).populate('comments.user', 'name email'); // optional populate
+            );
 
             if (!task) {
                 return res.status(404).json({ status: "fail", message: "Task not found" });
@@ -279,6 +276,37 @@ class TaskController {
                 status: 'success',
                 message: 'Attachment added successfully.',
                 task,
+            });
+        } catch (error) {
+            // Also delete file if something crashes during upload
+            if (req.file) {
+                fs.unlink(path.join(__dirname, '..', 'uploads', req.file.filename), () => { });
+            }
+            return res.status(500).json({
+                status: 'error',
+                message: `Message: ${error}`
+            });
+        }
+    };
+
+    // Delete a task
+    deleteTask = async (req, res) => {
+        try {
+            const taskId = req.params.id;
+
+            const task = await taskModel.findOneAndDelete({ _id: taskId, createdBy: req.userId });
+
+            if (!task) {
+                return res.status(404).json({
+                    status: 'fail',
+                    message: 'Task not found or user not authorized to delete this task.'
+                });
+            }
+
+            return res.status(200).json({
+                status: 'success',
+                message: 'Task deleted successfully.',
+                task
             });
         } catch (error) {
             return res.status(500).json({

@@ -10,7 +10,7 @@ const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
-class TaskMiddleware {
+class ProjectMiddleware {
     // Private method to handle validation errors
     #handleValidationErrors = (req, res) => {
         const errors = validationResult(req);
@@ -66,7 +66,7 @@ class TaskMiddleware {
             if (!userExist) {
                 return res.status(404).json({
                     status: 'fail',
-                    message: 'User not found || User not authorized to create task or view tasks.'
+                    message: 'User not found.'
                 });
             }
             return decoded.userId;
@@ -78,8 +78,8 @@ class TaskMiddleware {
         }
     };
 
-    // Middleware to validate task creation or updation
-    validateTaskCreationOrUpdation = async (req, res, next) => {
+    // Middleware to validate project creation or sending invites
+    validateProjectCreationOrSendingInvites = async (req, res, next) => {
         try {
             // Check for validation errors
             this.#handleValidationErrors(req, res);
@@ -101,8 +101,8 @@ class TaskMiddleware {
         }
     };
 
-    // Middleware to validate viewing tasks or deleting a task
-    validateViewTasksOrDeleteTask = async (req, res, next) => {
+    // Middleware to validate accpted invites
+    validateAcceptingInvites = async (req, res, next) => {
         try {
             // Verify JWT token
             const decoded = await this.#verifyToken(req, res);
@@ -119,7 +119,7 @@ class TaskMiddleware {
                 message: `Message: ${error}`
             });
         }
-    };
+    }
 }
 
-module.exports = new TaskMiddleware();
+module.exports = new ProjectMiddleware();
